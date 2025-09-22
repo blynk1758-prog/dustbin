@@ -1,144 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Dustbin Status</title>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Dustbin Navigator</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f6fa;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: linear-gradient(160deg, #0f2027, #203a43, #2c5364);
+      color: #e5e5e5;
+    }
 
-        .container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+    /* Header */
+    header {
+      width: 100%;
+      padding: 15px 30px;
+      background: rgba(25, 25, 25, 0.85); /* Solid dark tone */
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-        .card {
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            padding: 20px;
-            text-align: center;
-        }
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      color: #00acc1; /* Solid accent color */
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
 
-        .card h2 {
-            color: #2f3640;
-            margin-bottom: 15px;
-        }
+    /* Main layout */
+    main {
+      flex: 1;
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+    }
 
-        .status {
-            font-size: 1rem;
-            color: #353b48;
-            line-height: 1.6;
-        }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 300px;
+    }
 
-        .status p {
-            margin: 8px 0;
-        }
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+      padding: 16px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      opacity: 0;
+      animation: fadeInUp 0.8s ease forwards;
+    }
 
-        .status a {
-            text-decoration: none;
-            color: #00a8ff;
-            font-weight: bold;
-        }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 25px rgba(0, 172, 193, 0.5);
+    }
 
-        .status a:hover {
-            text-decoration: underline;
-            color: #0097e6;
-        }
+    .card h2 {
+      color: #ffffff;
+      margin-bottom: 8px;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
 
-        .loading {
-            color: #718093;
-            font-style: italic;
-        }
-    </style>
+    .status {
+      font-size: 0.9rem;
+      color: #d1d1d1;
+      line-height: 1.5;
+    }
+
+    .status p {
+      margin: 4px 0;
+    }
+
+    .status button {
+      margin-top: 10px;
+      padding: 8px 14px;
+      background: #00acc1; /* Solid teal */
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.25s ease, transform 0.2s ease;
+      font-size: 0.85rem;
+    }
+
+    .status button:hover {
+      background: #008b9e; /* Darker teal on hover */
+      transform: scale(1.05);
+    }
+
+    .loading {
+      color: #a0a0a0;
+      font-style: italic;
+    }
+
+    .map-container {
+      flex: 1;
+      min-width: 450px;
+      height: 100%;
+    }
+
+    .map-container iframe {
+      width: 100%;
+      height: calc(100vh - 80px);
+      border: none;
+      border-radius: 14px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <h1>Smart Dustbin Navigator</h1>
+  </header>
+
+  <main>
     <div class="container">
-        <div class="card" id="dustbin1">
-            <h2>Dustbin 1</h2>
-            <div class="status" id="status1">
-                <p class="loading">Loading...</p>
-            </div>
+      <div class="card" id="dustbin1">
+        <h2>Dustbin 1</h2>
+        <div class="status" id="status1">
+          <p class="loading">Loading...</p>
         </div>
+      </div>
 
-        <div class="card" id="dustbin2">
-            <h2>Dustbin 2</h2>
-            <div class="status" id="status2">
-                <p class="loading">Loading...</p>
-            </div>
+      <div class="card" id="dustbin2">
+        <h2>Dustbin 2</h2>
+        <div class="status" id="status2">
+          <p class="loading">Loading...</p>
         </div>
-        <div class="card" id="dustbin3">
-            <h2>Dustbin 3</h2>
-            <div class="status" id="status3">
-                <p class="loading">Loading...</p>
-            </div>
-        </div>
+      </div>
 
+      <div class="card" id="dustbin3">
+        <h2>Dustbin 3</h2>
+        <div class="status" id="status3">
+          <p class="loading">Loading...</p>
+        </div>
+      </div>
     </div>
 
-    <script>
-        // Your Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyA1R0nA8a_3DIe_MCO3DGB-sL7JLL1C6iA",
-            authDomain: "dustbin-67e2a.firebaseapp.com",
-            databaseURL: "https://dustbin-67e2a-default-rtdb.asia-southeast1.firebasedatabase.app/",
-            projectId: "dustbin-67e2a",
-            storageBucket: "dustbin-67e2a.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+    <!-- Google Maps -->
+    <div class="map-container">
+      <iframe id="mapFrame"
+        src="https://maps.google.com/maps?q=0,0&z=2&output=embed"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </main>
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1R0nA8a_3DIe_MCO3DGB-sL7JLL1C6iA",
+      authDomain: "dustbin-67e2a.firebaseapp.com",
+      databaseURL: "https://dustbin-67e2a-default-rtdb.asia-southeast1.firebasedatabase.app/",
+      projectId: "dustbin-67e2a",
+      storageBucket: "dustbin-67e2a.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-        // Function to display data for each dustbin
-        function displayDustbin(statusId, data) {
-            const statusDiv = document.getElementById(statusId);
-            if (data) {
-                statusDiv.innerHTML = `
-                    <p><strong>Latitude:</strong> ${data.lat}</p>
-                    <p><strong>Longitude:</strong> ${data.lng}</p>
-                    <p><strong>Full:</strong> ${data.isFull ? 'Yes' : 'No'}</p>
-                    <p><a href="https://maps.google.com/?q=${data.lat},${data.lng}" target="_blank">View on Map</a></p>
-                `;
-            } else {
-                statusDiv.innerHTML = "<p class='loading'>No data available.</p>";
-            }
-        }
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-        // listeners for Dustbin 1
-        const dustbin1Ref = database.ref('dustbins/dustbin1');
-        dustbin1Ref.on('value', (snapshot) => {
-            displayDustbin('status1', snapshot.val());
-        });
+    // Function to update map
+    function showOnMap(lat, lng) {
+      const mapFrame = document.getElementById("mapFrame");
+      mapFrame.src = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+    }
 
-        // listeners for Dustbin 2
-        const dustbin2Ref = database.ref('dustbins/dustbin2');
-        dustbin2Ref.on('value', (snapshot) => {
-            displayDustbin('status2', snapshot.val());
-        });
-        const dustbin3Ref = database.ref('dustbins/dustbin3');
-        dustbin3Ref.on('value', (snapshot) => {
-            displayDustbin('status3', snapshot.val());
-        });
-       
-    </script>
+    // Function to display dustbin data
+    function displayDustbin(statusId, data) {
+      const statusDiv = document.getElementById(statusId);
+      if (data) {
+        statusDiv.innerHTML = `
+          <p><strong>Latitude:</strong> ${data.lat}</p>
+          <p><strong>Longitude:</strong> ${data.lng}</p>
+          <p><strong>Status:</strong> ${data.isFull ? '🟥 Full' : '🟩 Empty'}</p>
+          <button onclick="showOnMap(${data.lat}, ${data.lng})">View on Map</button>
+        `;
+      } else {
+        statusDiv.innerHTML = "<p class='loading'>No data available.</p>";
+      }
+    }
+
+    // Listeners
+    database.ref('dustbins/dustbin1').on('value', (snapshot) => {
+      displayDustbin('status1', snapshot.val());
+    });
+    database.ref('dustbins/dustbin2').on('value', (snapshot) => {
+      displayDustbin('status2', snapshot.val());
+    });
+    database.ref('dustbins/dustbin3').on('value', (snapshot) => {
+      displayDustbin('status3', snapshot.val());
+    });
+  </script>
 </body>
 </html>
