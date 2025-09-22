@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Dustbin Status</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card h2 {
+            color: #2f3640;
+            margin-bottom: 15px;
+        }
+
+        .status {
+            font-size: 1rem;
+            color: #353b48;
+            line-height: 1.6;
+        }
+
+        .status p {
+            margin: 8px 0;
+        }
+
+        .status a {
+            text-decoration: none;
+            color: #00a8ff;
+            font-weight: bold;
+        }
+
+        .status a:hover {
+            text-decoration: underline;
+            color: #0097e6;
+        }
+
+        .loading {
+            color: #718093;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card" id="dustbin1">
+            <h2>Dustbin 1</h2>
+            <div class="status" id="status1">
+                <p class="loading">Loading...</p>
+            </div>
+        </div>
+
+        <div class="card" id="dustbin2">
+            <h2>Dustbin 2</h2>
+            <div class="status" id="status2">
+                <p class="loading">Loading...</p>
+            </div>
+        </div>
+        <div class="card" id="dustbin3">
+            <h2>Dustbin 3</h2>
+            <div class="status" id="status3">
+                <p class="loading">Loading...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1R0nA8a_3DIe_MCO3DGB-sL7JLL1C6iA",
+            authDomain: "dustbin-67e2a.firebaseapp.com",
+            databaseURL: "https://dustbin-67e2a-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "dustbin-67e2a",
+            storageBucket: "dustbin-67e2a.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Function to display data for each dustbin
+        function displayDustbin(statusId, data) {
+            const statusDiv = document.getElementById(statusId);
+            if (data) {
+                statusDiv.innerHTML = `
+                    <p><strong>Latitude:</strong> ${data.lat}</p>
+                    <p><strong>Longitude:</strong> ${data.lng}</p>
+                    <p><strong>Full:</strong> ${data.isFull ? 'Yes' : 'No'}</p>
+                    <p><a href="https://maps.google.com/?q=${data.lat},${data.lng}" target="_blank">View on Map</a></p>
+                `;
+            } else {
+                statusDiv.innerHTML = "<p class='loading'>No data available.</p>";
+            }
+        }
+
+        // listeners for Dustbin 1
+        const dustbin1Ref = database.ref('dustbins/dustbin1');
+        dustbin1Ref.on('value', (snapshot) => {
+            displayDustbin('status1', snapshot.val());
+        });
+
+        // listeners for Dustbin 2
+        const dustbin2Ref = database.ref('dustbins/dustbin2');
+        dustbin2Ref.on('value', (snapshot) => {
+            displayDustbin('status2', snapshot.val());
+        });
+        const dustbin3Ref = database.ref('dustbins/dustbin3');
+        dustbin3Ref.on('value', (snapshot) => {
+            displayDustbin('status3', snapshot.val());
+        });
+       
+    </script>
+</body>
+</html>
