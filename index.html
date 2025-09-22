@@ -208,7 +208,7 @@
         statusDiv.innerHTML = `
           <p><strong>Latitude:</strong> ${data.lat}</p>
           <p><strong>Longitude:</strong> ${data.lng}</p>
-          <p><strong>Status:</strong> ${data.isFull ? '🟥 Full' : '🟩 Empty'}</p>
+          <p><strong>Status:</strong> ${data.isFull ? 'Full' : 'Empty'}</p>
           <button onclick="showOnMap(${data.lat}, ${data.lng})">View on Map</button>
         `;
       } else {
